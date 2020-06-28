@@ -109,14 +109,14 @@
 	local journalTextDefault = "<font color='#000'><bl><p align='center'><font size='14'>Журнал</font></p><font face='Consolas'>"
 	local journalText --= {"<font color='#000'><bl><p align='center'><font size='14'>Журнал</font></p><font face='Consolas'>"}
 
-	function calcJournalLen(excess)
-		local len = #journalText
+	function calcJournalLen()
+		local len = 0
 
 		for i = 2, #journalText do
 			local v = journalText[i]
 
-			local lines = (length(v)-excess)/80
-			lines = (lines < 1 and 0) or math.ceil(lines)
+			local lines = (length(v)-46)/80
+			lines = math.ceil(lines)
 
 			len = len + lines
 		end
@@ -125,13 +125,13 @@
 	end
 
 
-	function fixLength(excess)
-		local len = calcJournalLen(excess)
+	function fixLength()
+		local len = calcJournalLen()
 
 		while len > 20 do
 			table.remove(journalText, 2)
 
-			len = calcJournalLen(excess)
+			len = calcJournalLen()
 		end
 	end
 
@@ -147,7 +147,7 @@
 			journalText[#journalText + 1] = "\n<bv>["..formattedPlayerName.."]</bv> : <g>"..message.."</g>"
 		end
 
-		fixLength(46)
+		fixLength()
 
 		ui.updateTextArea(15, table.concat(journalText, ""))
 	end
