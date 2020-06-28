@@ -44,6 +44,7 @@
 
 			end
 		end
+		return false
 	end
 
 --[[ / --]]
@@ -79,6 +80,12 @@
 			playerData[playerName].isInGame = true
 		else
 			playerData[playerName].isInGame = isPicking
+		end
+
+		-- add to turnlist
+		if not table.find(playerTurnList, playerName) then
+			playerTurnList[#playerTurnList + 1] = playerName
+			updateUi()
 		end
 
 		for _, v in next, key do
@@ -348,7 +355,7 @@
 
 
 	function eventPopupAnswer(popupId, playerName, answer)
-		if answer then
+		if answer ~= "" then
 			addNote(playerName, "note "..answer)
 		end
 	end
@@ -472,11 +479,10 @@
 
 		if args[1] == "note" then
 			addNote(playerName, command)
-
 			return
+
 		elseif args[1] == "help" then
 			updateHelpMessage(playerName)
-
 			return
 		end
 
@@ -486,6 +492,7 @@
 
 				addMessage(playerName, "<rose>Следующий ход</rose>")
 				return
+
 			elseif args[1] == "start" then
 				isPicking = false
 
@@ -495,6 +502,7 @@
 				addMessage(playerName, "<rose>Все роли разданы</rose>")
 				updateUi()
 				return
+
 			elseif args[1] == "restart" then
 				Reload()
 
