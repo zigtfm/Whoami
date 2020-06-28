@@ -59,6 +59,7 @@
 		N = string.byte("N"),
 		H = string.byte("H"),
 		V = string.byte("V"),
+		P = string.byte("P"),
 	}
 
 	function eventNewPlayer(playerName)
@@ -70,22 +71,11 @@
 				isTurn = false,
 				isWon = false,
 				isInGame = false,
+				isInGame = false,
 				pickPoll = false,
 				role = "#",
 				notes = {},
 			}
-		end
-		
-		if playerData[playerName].role ~= "#" then
-			playerData[playerName].isInGame = true
-		else
-			playerData[playerName].isInGame = isPicking
-		end
-
-		-- add to turnlist
-		if not table.find(playerTurnList, playerName) then
-			playerTurnList[#playerTurnList + 1] = playerName
-			updateUi()
 		end
 
 		for _, v in next, key do
@@ -93,7 +83,6 @@
 		end
 
 		updateHelpMessage(playerName)
-
 	end
 
 	--table.foreach(tfm.get.room.playerList, eventNewPlayer)
@@ -143,6 +132,7 @@
 	end
 
 
+	-- add a message to the journal
 	function addMessage(playerName, message)
 		local formattedPlayerName = formatPlayerName(playerName)
 
@@ -169,6 +159,26 @@
 	end
 
 
+	-- add player to the turn list
+	function join(playerName)
+		if playerData[playerName].role ~= "#" then
+			playerData[playerName].isInGame = true
+		else
+			playerData[playerName].isInGame = isPicking
+		end
+
+		if not table.find(playerTurnList, playerName) then
+			local pos = tfm.get.room.playerList[playerName]
+			tfm.exec.displayParticle(15, pos.x, pos.y, 0, -1, 0, 0.1)
+
+			playerTurnList[#playerTurnList + 1] = playerName			
+
+			updateUi()
+		end
+
+	end
+
+
 	function nextTurn()
 		for i, v in next, playerData do
 			v.pickPoll = false
@@ -188,6 +198,7 @@
 			if turn > #playerTurnList then
 				turn = 1 
 			end
+
 			if playerData[playerTurnList[turn]].isInGame then
 				isNotValid = playerData[playerTurnList[turn]].isWon
 			end
@@ -214,6 +225,8 @@
 	end
 
 
+	--[[ -- never used
+
 	function updateTurns()
 		playerTurnList = {}
 		c = 0
@@ -224,8 +237,10 @@
 			end
 		end
 	end
+	--]]
 
 
+	-- return: if all players pickPoll == true
 	function checkAgreedPlayers()
 		for i, v in next, playerData do
 			if not v.pickPoll then
@@ -313,7 +328,19 @@
 
 
 	function updateHelpMessage(playerName)
-		ui.addTextArea(17, "<a href='event:update_journal'><r>! Обновление 1.2</r>\n<p align='center'><font size='14'>Игра \"Кто я\"</font></p>\n\tРоль каждого игрока выбирается перед началом игры, и будет отображаться в журнале. Вы не будете видеть только свою роль. Игрок, чью роль сейчас выбирают, не может открыть журнал, чтобы не видеть обсуждения. После того, как все роли разданы, все игроки по очереди задают 3 вопроса. Ответом на них должны быть \"да\" или \"нет\". В конце, выделенный игрок может попробовать угадать роль, написав в чат.\n\tС 4-го хода можно попросить подсказку от выбранного вами игрока, но вы не можете задавать вопросы на этот ход.\n\n<p align='center'><font size='14'>Команды</font></p>\n<b>H</b> или <b>!help</b> - открыть это сообщение.\n<b>!role <i>роль</i></b> - изменить роль игрока.\n<b>!</b> - написать в журнал сообщение\n<b>N</b> или <b>!note <i>заметка</i></b> - добавить заметку в журнал (её видите только Вы)\n<b>V</b> или <b>!+</b> - голосовать за выбор роли\n\nНажмите в области серого квадрата или клавишу <b>J</b> чтобы открыть журнал\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", playerName, 190, 40, 430, 340, 0x000001, 0x000001, 0.5, true)
+		ui.addTextArea(17, [[<a href='event:update_journal'><r>! Обновление 1.3</r>
+<p align='center'><font size='14'>Игра "Кто я"</font></p>	У каждого игрока есть роль, которую ему надо угадать, чтобы победить. Роль задается другими игроками перед игрой и отображается в журнале. (Игрок, чью роль сейчас выбирают, не может открыть журнал, чтобы не видеть обсуждения )
+	Когда все роли разданы, все игроки по очереди задают 3 вопроса. Ответом на них должны быть "да" или "нет". В конце хода игрок может попобовать угадать роль, написав в чат.
+	С после вашего 3-го хода можно попросить подсказку от выбранного вами игрока, но вы не можете задавать вопросы на этот ход.
+<p align='center'><font size='14'>Команды</font></p><b>P</b> - присоединиться к игре
+<b>!role <i>роль</i></b> - изменить роль игрока.
+<b>!</b> - написать сообщение в журнал
+
+<b>H</b> или <b>!help</b> - открыть это сообщение.
+<b>N</b> или <b>!note <i>заметка</i></b> - добавить заметку в журнал (её видите только Вы)
+<b>V</b> - голосовать за выбор роли
+
+Нажмите в области серого квадрата или клавишу <b>J</b> чтобы открыть журнал]], playerName, 190, 40, 430, 340, 0x000001, 0x000001, 0.5, true)
 	end
 
 
@@ -350,6 +377,10 @@
 			checkAgreedPlayers()
 
 			updateUi()
+
+		elseif (keyCode == key.P) then
+			join(playerName)
+
 		end
 	end
 
@@ -520,8 +551,8 @@
 		end
 
 		if (not Data.isTurn) and (playerName ~= args[2]) then
-			if isPicking then
-				if args[1] == "role" then
+			if args[1] == "role" then
+				if isPicking then
 					local turnPlayer = playerTurnList[turn]
 
 					playerData[turnPlayer].role = args[2] or "#"
@@ -529,17 +560,9 @@
 
 					updateUi()
 
-					return
-
-				elseif args[1] == "+" then
-					Data.pickPoll = not Data.pickPoll
-					checkAgreedPlayers()
-
-					updateUi()
-					return
 				end
+				return
 			end
-
 
 			addMessage(playerName, command)		
 			return
@@ -553,20 +576,14 @@
 		playerData = {}
 		playerTurnList = {}
 		isPicking = true
-		local c = 0
 
 		for playerName in next, tfm.get.room.playerList do
-			c = c + 1
-			playerTurnList[c] = playerName
-
 			eventNewPlayer(playerName)
 			updateUi(playerName, false)
 			print(isPicking)
 		end
 
 		turn = 0
-
-		nextTurn()
 	end
 
 
