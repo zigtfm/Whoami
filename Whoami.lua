@@ -186,19 +186,21 @@
 			end
 		end
 
+
+		local turnPlayer = playerTurnList[turn]
 		-- spawn an arrow
-		local Data = tfm.get.room.playerList[playerTurnList[turn]]
+		local Data = tfm.get.room.playerList[turnPlayer]
 		tfm.exec.addShamanObject(0, Data.x, Data.y)
 
 		-- set next player to true
-		Data = playerData[playerTurnList[turn]]
+		Data = playerData[turnPlayer]
 		Data.isTurn = true
 
 		-- update journal if picking
 		if isPicking then
 			journalText = {journalTextDefault}
 			Data.isUiVisible = false
-			updateUi(playerTurnList[turn])
+			updateUi(turnPlayer)
 		end
 
 		updateUi()
@@ -304,7 +306,7 @@
 
 
 	function updateHelpMessage(playerName)
-		ui.addTextArea(17, "<a href='event:update_journal'><r>! Обновление 1.1.1</r>\n<p align='center'><font size='14'>Игра \"Кто я\"</font></p>\n\tРоль каждого игрока выбирается перед началом игры, и будет отображаться в журнале. Вы не будете видеть только свою роль. Игрок, чью роль сейчас выбирают, не может открыть журнал, чтобы не видеть обсуждения. После того, как все роли разданы, все игроки по очереди задают 3 вопроса. Ответом на них должны быть \"да\" или \"нет\". В конце, выделенный игрок может попробовать угадать роль, написав в чат.\n\tС 4-го хода можно попросить подсказку от выбранного вами игрока, но вы не можете задавать вопросы на этот ход.\n\n<p align='center'><font size='14'>Команды</font></p>\n<b>H</b> или <b>!help</b> - открыть это сообщение.\n<b>!setrole <i>"..formatPlayerName("Ник#0000").."</i> <i>роль</i></b> - изменить роль игрока.\n<b>!</b> - написать в журнал сообщение\n<b>N</b> или <b>!note <i>заметка</i></b> - добавить заметку в журнал (её видите только Вы)\nНажмите в области серого квадрата или клавишу <b>J</b> чтобы открыть журнал\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", playerName, 190, 40, 430, 340, 0x000001, 0x000001, 0.5, true)
+		ui.addTextArea(17, "<a href='event:update_journal'><r>! Обновление 1.2</r>\n<p align='center'><font size='14'>Игра \"Кто я\"</font></p>\n\tРоль каждого игрока выбирается перед началом игры, и будет отображаться в журнале. Вы не будете видеть только свою роль. Игрок, чью роль сейчас выбирают, не может открыть журнал, чтобы не видеть обсуждения. После того, как все роли разданы, все игроки по очереди задают 3 вопроса. Ответом на них должны быть \"да\" или \"нет\". В конце, выделенный игрок может попробовать угадать роль, написав в чат.\n\tС 4-го хода можно попросить подсказку от выбранного вами игрока, но вы не можете задавать вопросы на этот ход.\n\n<p align='center'><font size='14'>Команды</font></p>\n<b>H</b> или <b>!help</b> - открыть это сообщение.\n<b>!role <i>роль</i></b> - изменить роль игрока.\n<b>!</b> - написать в журнал сообщение\n<b>N</b> или <b>!note <i>заметка</i></b> - добавить заметку в журнал (её видите только Вы)\n<b>V</b> или <b>!+</b> - голосовать за выбор роли\n\nНажмите в области серого квадрата или клавишу <b>J</b> чтобы открыть журнал\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", playerName, 190, 40, 430, 340, 0x000001, 0x000001, 0.5, true)
 	end
 
 
@@ -511,15 +513,16 @@
 
 		if (not Data.isTurn) and (playerName ~= args[2]) then
 			if isPicking then
-				if args[1] == "setrole" then
-					if playerData[args[2]] and playerData[args[2]].isTurn then
-						playerData[args[2]].role = args[3] or "<r>nil</r>"
-						addMessage(playerName, "<n2>"..args[2].." -&gt; "..args[3].."</n2>")
+				if args[1] == "role" then
+					local turnPlayer = playerTurnList[turn]
 
-						updateUi()
+					playerData[turnPlayer].role = args[2] or "#"
+					addMessage(playerName, "<n2>-&gt; "..args[2].."</n2>")
 
-						return
-					end
+					updateUi()
+
+					return
+
 				elseif args[1] == "+" then
 					Data.pickPoll = not Data.pickPoll
 					checkAgreedPlayers()
@@ -564,8 +567,3 @@ Reload()
 for playerName in next, tfm.get.room.playerList do
 	tfm.exec.setPlayerScore(playerName, 0, false)
 end
-
---[[
-кнопки для подтверждения роли
--- частицы при нажатии 
---]]
