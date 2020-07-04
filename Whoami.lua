@@ -71,7 +71,6 @@
 				isTurn = false,
 				isWon = false,
 				isInGame = false,
-				isInGame = false,
 				pickPoll = false,
 				role = "#",
 				notes = {},
@@ -79,7 +78,7 @@
 		end
 
 		for _, v in next, key do
-			system.bindKeyboard(playerName, v, true, true)	
+			system.bindKeyboard(playerName, v, true, true)
 		end
 
 		updateHelpMessage(playerName)
@@ -243,7 +242,7 @@
 	-- return: if all players pickPoll == true
 	function checkAgreedPlayers()
 		for i, v in next, playerData do
-			if not v.pickPoll then
+			if (not v.pickPoll) and (v.isInGame) then
 				if not v.isTurn then
 					return
 				end
@@ -328,7 +327,7 @@
 
 
 	function updateHelpMessage(playerName)
-		ui.addTextArea(17, [[<a href='event:update_journal'><r>! Обновление 1.3</r>
+		ui.addTextArea(17, [[<a href='event:update_journal'><r>Версия 1.3.1</r>
 <p align='center'><font size='14'>Игра "Кто я"</font></p>	У каждого игрока есть роль, которую ему надо угадать, чтобы победить. Роль задается другими игроками перед игрой и отображается в журнале. (Игрок, чью роль сейчас выбирают, не может открыть журнал, чтобы не видеть обсуждения )
 	Когда все роли разданы, все игроки по очереди задают 3 вопроса. Ответом на них должны быть "да" или "нет". В конце хода игрок может попобовать угадать роль, написав в чат.
 	С после вашего 3-го хода можно попросить подсказку от выбранного вами игрока, но вы не можете задавать вопросы на этот ход.
@@ -336,8 +335,8 @@
 <b>!role <i>роль</i></b> - изменить роль игрока.
 <b>!</b> - написать сообщение в журнал
 
-<b>H</b> или <b>!help</b> - открыть это сообщение.
-<b>N</b> или <b>!note <i>заметка</i></b> - добавить заметку в журнал (её видите только Вы)
+<b>H</b> - открыть это сообщение.
+<b>N</b> - добавить заметку в журнал (её видите только Вы)
 <b>V</b> - голосовать за выбор роли
 
 Нажмите в области серого квадрата или клавишу <b>J</b> чтобы открыть журнал]], playerName, 190, 40, 430, 340, 0x000001, 0x000001, 0.5, true)
@@ -359,28 +358,33 @@
 
 	function eventKeyboard(playerName, keyCode, down, xPlayerPosition, yPlayerPosition)
 		local Data = playerData[playerName]
-
-		if (keyCode == key.J) then
-			if isPicking and Data.isTurn then return end
-
-			Data.isUiVisible = not Data.isUiVisible
-			updateUi(playerName)
-
-		elseif (keyCode == key.N) then
-			ui.addPopup(0, 2, "", playerName, 350, 200, 100, true)
-
-		elseif (keyCode == key.H) then
-			updateHelpMessage(playerName)
-
-		elseif (keyCode == key.V) and (not Data.isTurn) and isPicking then
-			Data.pickPoll = not Data.pickPoll
-			checkAgreedPlayers()
-
-			updateUi()
-
-		elseif (keyCode == key.P) then
+		
+		if (keyCode == key.P) then
 			join(playerName)
+			return
+		end
 
+		if Data.isInGame then
+			if (keyCode == key.J) then
+				if isPicking and Data.isTurn then return end
+	
+				Data.isUiVisible = not Data.isUiVisible
+				updateUi(playerName)
+	
+			elseif (keyCode == key.N) then
+				ui.addPopup(0, 2, "", playerName, 350, 200, 100, true)
+	
+			elseif (keyCode == key.H) then
+				Data.isUiVisible = false
+				updateUi(playerName)
+				updateHelpMessage(playerName)
+	
+			elseif (keyCode == key.V) and (not Data.isTurn) and isPicking then
+				Data.pickPoll = not Data.pickPoll
+				checkAgreedPlayers()
+	
+				updateUi()
+			end
 		end
 	end
 
@@ -410,7 +414,7 @@
 
 				local pollState
 
-				if Data.isTurn then
+				if Data.isTurn or (not Data.isInGame) then
 					pollState = ""
 				elseif Data.pickPoll then
 					pollState = "<vp>✓</vp>"
@@ -550,7 +554,7 @@
 			end
 		end
 
-		if (not Data.isTurn) and (playerName ~= args[2]) then
+		if (not Data.isTurn) and (playerName ~= args[2]) and (turn > 0) then
 			if args[1] == "role" then
 				if isPicking then
 					local turnPlayer = playerTurnList[turn]
