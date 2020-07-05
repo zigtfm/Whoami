@@ -104,13 +104,24 @@
 	local journalTextDefault = "<font color='#000'><bl><p align='center'><font size='14'>Журнал</font></p><font face='Consolas'>"
 	local journalText --= {"<font color='#000'><bl><p align='center'><font size='14'>Журнал</font></p><font face='Consolas'>"}
 
+	-- get amount of lines in journal
 	function calcJournalLen()
 		local len = 0
 
+		-- loop through all values of journalText
+
+		-- 1st line is journalTextDefault
+		-- so skip it
 		for i = 2, #journalText do
 			local v = journalText[i]
 
+			-- get legnth of line
+			-- -46 is for special invisible symbols
+			-- like \n <b> <font> etc
+			-- /80 is approx amount of characters in each line
 			local lines = (length(v)-46)/80
+
+			-- main ceil
 			lines = math.ceil(lines)
 
 			len = len + lines
@@ -123,6 +134,8 @@
 	function fixLength()
 		local len = calcJournalLen()
 
+		-- delete lines in journal until
+		-- their amount is <= 20
 		while len > 20 do
 			table.remove(journalText, 2)
 
@@ -362,6 +375,13 @@
 		if (keyCode == key.P) then
 			join(playerName)
 			return
+
+		elseif (keyCode == key.H) then
+			Data.isUiVisible = false
+			updateUi(playerName)
+			updateHelpMessage(playerName)
+			
+			return
 		end
 
 		if Data.isInGame then
@@ -374,10 +394,6 @@
 			elseif (keyCode == key.N) then
 				ui.addPopup(0, 2, "", playerName, 350, 200, 100, true)
 	
-			elseif (keyCode == key.H) then
-				Data.isUiVisible = false
-				updateUi(playerName)
-				updateHelpMessage(playerName)
 	
 			elseif (keyCode == key.V) and (not Data.isTurn) and isPicking then
 				Data.pickPoll = not Data.pickPoll
