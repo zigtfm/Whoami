@@ -1,3 +1,62 @@
+--[[ Translation ]]
+translation = {
+	en = {
+		journal = "Journal",
+		notes = "Notes",
+		hidden = "hidden",
+		error = {
+			longMessage = "Too long message",
+		},
+		command = { 
+			nextTurn = "Next turn",
+			allWordsGiven = "All words given.",
+			newGame = "New game",
+			playerWon = "Player %s won",
+		},
+		help = [[<a href='event:update_journal'><r>Version %s</r>
+<p align='center'><font size='14'>Game "Who am i"</font></p>	Every player has a word, which he should guess, to win. The word is given by other players before the game and visible in the journal. (Player, which word is being discussed, can't open the journal, so he cant see the conversation )
+	After all words has been given, all players are asking 3 question by order. Answers can be only "yes" or "no". In the end player can try to guess a word, by writting in chat.
+	After 3rd turn you can ask a tip from choosen by you player, but you can ask 3 questions this turn.
+<p align='center'><font size='14'>Commands</font></p><b>P</b> - join the game
+<b>!word <i>word</i></b> - change the word.
+<b>!</b> - write a message in the journal
+
+<b>H</b> - open this message.
+<b>N</b> - add a note in the journal (only you can see it)
+<b>V</b> - vote for the word
+
+Press on the grey square or key <b>J</b> to open the journal]],
+	},
+	ru = {
+		journal = "Журнал",
+		notes = "Записки",
+		hidden = "скрыто",
+		error = {
+			longMessage = "Слишком длинное сообщение",
+		},
+		command = { 
+			nextTurn = "Следующий ход",
+			allWordsGiven = "Все слова разданы",
+			newGame = "Новая игра",
+			playerWon = "Игрок %s победил",
+		},
+		help = [[<a href='event:update_journal'><r>Версия %s</r>
+<p align='center'><font size='14'>Игра "Кто я"</font></p>	У каждого игрока есть слово, которую ему надо угадать, чтобы победить. Слово задается другими игроками перед игрой и отображается в журнале. (Игрок, чью слово сейчас выбирают, не может открыть журнал, чтобы не видеть обсуждения )
+	Когда все слова разданы, все игроки по очереди задают 3 вопроса. Ответом на них должны быть "да" или "нет". В конце хода игрок может попобовать угадать слово, написав в чат.
+	С после вашего 3-го хода можно попросить подсказку от выбранного вами игрока, но вы не можете задавать вопросы на этот ход.
+<p align='center'><font size='14'>Команды</font></p><b>P</b> - присоединиться к игре
+<b>!word <i>слово</i></b> - изменить слово игрока.
+<b>!</b> - написать сообщение в журнал
+
+<b>H</b> - открыть это сообщение.
+<b>N</b> - добавить заметку в журнал (её видите только Вы)
+<b>V</b> - голосовать за выбор слова
+
+Нажмите в области серого квадрата или клавишу <b>J</b> чтобы открыть журнал]],
+	}
+}
+--[[ / ]]
+
 --[[ Who used ]]
 
 	local who_used
@@ -8,11 +67,27 @@
 
 --[[ / --]]
 
+function table.copy(t)
+	local out = {}
+	for i, v in next, t do
+		out[i] = v
+	end
+	return out
+end
+
 -- var
 
 	local playerTurnList = {}
 	local isPicking = true
 	local turn 
+
+	misc = {
+		version = "1.3.1"
+	}
+
+	local community = tfm.get.room.playerList[who_used].community
+	local community = "en"
+	translation = table.copy(translation[community])
 
 --
 
@@ -101,7 +176,7 @@
 
 --[[ Main --]]
 
-	local journalTextDefault = "<font color='#000'><bl><p align='center'><font size='14'>Журнал</font></p><font face='Consolas'>"
+	local journalTextDefault = "<font color='#000'><bl><p align='center'><font size='14'>"..translation.journal.."</font></p><font face='Consolas'>"
 	local journalText --= {"<font color='#000'><bl><p align='center'><font size='14'>Журнал</font></p><font face='Consolas'>"}
 
 	-- get amount of lines in journal
@@ -151,7 +226,7 @@
 		message = message:gsub("("..string.rep("%S", 40-#playerName)..")", "%1\n", 1)
 
 		if length(message) > 120-#playerName+10 then
-			journalText[#journalText + 1] = "\n<bv>["..formattedPlayerName.."]</bv> : <r>Слишком длинное сообщение</r>"
+			journalText[#journalText + 1] = "\n<bv>["..formattedPlayerName.."]</bv> : <r>"..translation.error.longMessage.."</r>"
 		else
 			journalText[#journalText + 1] = "\n<bv>["..formattedPlayerName.."]</bv> : <g>"..message.."</g>"
 		end
@@ -296,6 +371,7 @@
 			end
 		end
 	end
+
 --[[ / --]]
 
 
@@ -340,19 +416,7 @@
 
 
 	function updateHelpMessage(playerName)
-		ui.addTextArea(17, [[<a href='event:update_journal'><r>Версия 1.3.1</r>
-<p align='center'><font size='14'>Игра "Кто я"</font></p>	У каждого игрока есть роль, которую ему надо угадать, чтобы победить. Роль задается другими игроками перед игрой и отображается в журнале. (Игрок, чью роль сейчас выбирают, не может открыть журнал, чтобы не видеть обсуждения )
-	Когда все роли разданы, все игроки по очереди задают 3 вопроса. Ответом на них должны быть "да" или "нет". В конце хода игрок может попобовать угадать роль, написав в чат.
-	С после вашего 3-го хода можно попросить подсказку от выбранного вами игрока, но вы не можете задавать вопросы на этот ход.
-<p align='center'><font size='14'>Команды</font></p><b>P</b> - присоединиться к игре
-<b>!role <i>роль</i></b> - изменить роль игрока.
-<b>!</b> - написать сообщение в журнал
-
-<b>H</b> - открыть это сообщение.
-<b>N</b> - добавить заметку в журнал (её видите только Вы)
-<b>V</b> - голосовать за выбор роли
-
-Нажмите в области серого квадрата или клавишу <b>J</b> чтобы открыть журнал]], playerName, 190, 40, 430, 340, 0x000001, 0x000001, 0.5, true)
+		ui.addTextArea(17, translation.help:format(misc.version), playerName, 190, 40, 430, 340, 0x000001, 0x000001, 0.5, true)
 	end
 
 
@@ -413,7 +477,7 @@
 
 
 	function notesText(playerName)
-		local out, c = {"<font color='#000'><bl><p align='center'><font size='14'>Записки</font></p>"}, 1
+		local out, c = {"<font color='#000'><bl><p align='center'><font size='14'>"..translation.notes.."</font></p>"}, 1
 
 		for Name, Data in next, playerData do
 			c = c + 1
@@ -439,13 +503,13 @@
 				end
 
 
-				out[c] = color[1]..Name..color[2].." [ "..((playerName == Name) and "<b>скрыто</b>" or Data.role).." ] "..pollState.."\n"
+				out[c] = color[1]..Name..color[2].." [ "..((playerName == Name) and "<b>"..translation.hidden.."</b>" or Data.role).." ] "..pollState.."\n"
 
 			else
 				if Data.isWon then
 					out[c] ="<vp>"..Name.." [ "..Data.role.." ]</vp>\n"
 				else
-					out[c] = color[1]..Name..color[2].." [ "..((playerName == Name) and "<b>скрыто</b>" or Data.role).." ]\n"
+					out[c] = color[1]..Name..color[2].." [ "..((playerName == Name) and "<b>"..translation.hidden.."</b>" or Data.role).." ]\n"
 				end
 			end
 		end
@@ -503,7 +567,7 @@
 
 --[[ Eventloop --]]
 
-	local pickTimer = 0
+--[[ 	local pickTimer = 0
 	local pickTime = 20
 
 	function eventLoop(elapsedTime, remainingTime)
@@ -511,7 +575,7 @@
 		if pickTime then
 
 		end
-	end
+	end ]]
 
 --[[ / --]]
 
@@ -541,7 +605,7 @@
 			if args[1] == "next" then
 				nextTurn()
 
-				addMessage(playerName, "<rose>Следующий ход</rose>")
+				addMessage(playerName, "<rose>"..translation.command.nextTurn.."</rose>")
 				return
 
 			elseif args[1] == "start" then
@@ -550,20 +614,20 @@
 				-- clear journal and set everyones isTurn to false
 				journalText = {journalTextDefault}
 
-				addMessage(playerName, "<rose>Все роли разданы</rose>")
+				addMessage(playerName, "<rose>"..translation.command.allWordsGiven.."</rose>")
 				updateUi()
 				return
 
 			elseif args[1] == "restart" then
 				Reload()
 
-				addMessage(playerName, "<rose>Новая игра</rose>")
+				addMessage(playerName, "<rose>"..translation.command.newGame.."</rose>")
 				return
 
 			elseif args[1] == "win" then
 				if playerData[args[2]] then
 					playerWin(args[2])
-					addMessage(playerName, "<rose>Игрок "..args[2].." победил!</rose>")
+					addMessage(playerName, string.format("<rose>"..translation.command.playerWon.."!</rose>", args[2]))
 					updateUi()
 				end
 				return
@@ -571,7 +635,7 @@
 		end
 
 		if (not Data.isTurn) and (playerName ~= args[2]) and (turn > 0) then
-			if args[1] == "role" then
+			if args[1] == "word" then
 				if isPicking then
 					local turnPlayer = playerTurnList[turn]
 
